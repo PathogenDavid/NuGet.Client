@@ -80,16 +80,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 return null;
             }
 
-            // The project must be an IVsHierarchy.
-            var hierarchy = vsProjectAdapter.VsHierarchy;
-            var nominatesOnSolutionLoad = hierarchy.IsCapabilityMatch("VSIX");
-
             return new LegacyPackageReferenceProject(
                 vsProjectAdapter,
                 vsProjectAdapter.ProjectId,
                 projectServices,
-                _threadingService,
-                nominatesOnSolutionLoad);
+                _threadingService);
         }
 
         /// <summary>
@@ -99,6 +94,10 @@ namespace NuGet.PackageManagement.VisualStudio
             IVsProjectAdapter vsProjectAdapter, bool forceCreate)
         {
             var componentModel = await _componentModel.GetValueAsync();
+
+            // The project must be an IVsHierarchy.
+            var hierarchy = vsProjectAdapter.VsHierarchy;
+            var nominatesOnSolutionLoad = hierarchy.IsCapabilityMatch("VSIX");
 
             // Check for RestoreProjectStyle property
             var restoreProjectStyle = await vsProjectAdapter.BuildProperties.GetPropertyValueAsync(
@@ -118,7 +117,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return new DeferredProjectServicesProxy(
                     vsProjectAdapter,
                     new DeferredProjectCapabilities { SupportsPackageReferences = true },
-                    () => CreateCoreProjectSystemServices(vsProjectAdapter, componentModel),
+                    () => CreateCoreProjectSystemServices(vsProjectAdapter, componentModel, nominatesOnSolutionLoad),
                     componentModel);
             }
             else
@@ -137,7 +136,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     || PackageReference.Equals(restoreProjectStyle, StringComparison.OrdinalIgnoreCase)
                     || (asVSProject4.PackageReferences?.InstalledPackages?.Length ?? 0) > 0)
                 {
-                    return CreateCoreProjectSystemServices(vsProjectAdapter, componentModel);
+                    return CreateCoreProjectSystemServices(vsProjectAdapter, componentModel, nominatesOnSolutionLoad);
                 }
             }
 
@@ -162,9 +161,9 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         private INuGetProjectServices CreateCoreProjectSystemServices(
-                IVsProjectAdapter vsProjectAdapter, IComponentModel componentModel)
+                IVsProjectAdapter vsProjectAdapter, IComponentModel componentModel, bool nominatesOnSolutionLoad)
         {
-            return new VsManagedLanguagesProjectSystemServices(vsProjectAdapter, componentModel);
+            return new VsManagedLanguagesProjectSystemServices(vsProjectAdapter, componentModel, nominatesOnSolutionLoad);
         }
     }
 }

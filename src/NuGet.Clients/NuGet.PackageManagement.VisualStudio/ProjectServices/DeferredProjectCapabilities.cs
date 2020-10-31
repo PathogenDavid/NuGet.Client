@@ -11,5 +11,7 @@ namespace NuGet.PackageManagement.VisualStudio
     internal class DeferredProjectCapabilities : IProjectSystemCapabilities
     {
         public bool SupportsPackageReferences { get; set; }
+
+        public bool NominatesOnSolutionLoad { get; set; }
     }
 }

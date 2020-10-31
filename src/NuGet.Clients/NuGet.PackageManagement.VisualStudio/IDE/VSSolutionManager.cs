@@ -308,7 +308,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             if (nuGetProject is LegacyPackageReferenceProject legacyPackageReferenceProject)
             {
-                return legacyPackageReferenceProject.IsRestoredOnSolutionLoad;
+                return legacyPackageReferenceProject.ProjectServices.Capabilities.NominatesOnSolutionLoad;
             }
             return false;
         }

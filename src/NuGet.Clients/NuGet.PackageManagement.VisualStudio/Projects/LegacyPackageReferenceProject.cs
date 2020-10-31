@@ -43,14 +43,12 @@ namespace NuGet.PackageManagement.VisualStudio
         private string _projectFullPath;
         private Dictionary<string, ProjectInstalledPackage> _installedPackages = new Dictionary<string, ProjectInstalledPackage>(StringComparer.OrdinalIgnoreCase);
         private DateTime _lastTimeAssetsModified;
-        public bool IsRestoredOnSolutionLoad { get; }
 
         public LegacyPackageReferenceProject(
             IVsProjectAdapter vsProjectAdapter,
             string projectId,
             INuGetProjectServices projectServices,
-            IVsProjectThreadingService threadingService,
-            bool isRestoredOnSolutionLoad = false)
+            IVsProjectThreadingService threadingService)
         {
             Assumes.Present(vsProjectAdapter);
             Assumes.NotNullOrEmpty(projectId);
@@ -72,7 +70,6 @@ namespace NuGet.PackageManagement.VisualStudio
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
 
             ProjectServices = projectServices;
-            IsRestoredOnSolutionLoad = isRestoredOnSolutionLoad;
         }
 
         #region BuildIntegratedNuGetProject
