@@ -15,7 +15,6 @@ using NuGet.ProjectModel;
 using NuGet.VisualStudio;
 using VSLangProj150;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
-using ProjectSystem = Microsoft.VisualStudio.ProjectSystem;
 
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -95,10 +94,6 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             var componentModel = await _componentModel.GetValueAsync();
 
-            // The project must be an IVsHierarchy.
-            var hierarchy = vsProjectAdapter.VsHierarchy;
-            var nominatesOnSolutionLoad = hierarchy.IsCapabilityMatch("VSIX");
-
             // Check for RestoreProjectStyle property
             var restoreProjectStyle = await vsProjectAdapter.BuildProperties.GetPropertyValueAsync(
                 ProjectBuildProperties.RestoreProjectStyle);
@@ -117,7 +112,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return new DeferredProjectServicesProxy(
                     vsProjectAdapter,
                     new DeferredProjectCapabilities { SupportsPackageReferences = true },
-                    () => CreateCoreProjectSystemServices(vsProjectAdapter, componentModel, nominatesOnSolutionLoad),
+                    () => CreateCoreProjectSystemServices(vsProjectAdapter, componentModel, false),
                     componentModel);
             }
             else
@@ -136,6 +131,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     || PackageReference.Equals(restoreProjectStyle, StringComparison.OrdinalIgnoreCase)
                     || (asVSProject4.PackageReferences?.InstalledPackages?.Length ?? 0) > 0)
                 {
+                    var nominatesOnSolutionLoad = await vsProjectAdapter.IsCapabilityMatchAsync(NuGet.VisualStudio.IDE.ProjectCapabilities.PackageReferences)));
                     return CreateCoreProjectSystemServices(vsProjectAdapter, componentModel, nominatesOnSolutionLoad);
                 }
             }
